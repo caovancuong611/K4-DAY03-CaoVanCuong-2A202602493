@@ -6,6 +6,7 @@ Hỗ trợ Native Tool Calling và chuyển đổi linh hoạt qua biến môi t
 import os
 import sys
 import json
+import time
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 
@@ -107,11 +108,25 @@ class GeminiProvider(BaseLLMProvider):
                 temperature=0.2
             )
 
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=config
-            )
+            response = None
+            last_error = None
+            for attempt, backoff in enumerate([0, 20, 40]):
+                if backoff:
+                    time.sleep(backoff)
+                try:
+                    response = client.models.generate_content(
+                        model=self.model_name,
+                        contents=prompt,
+                        config=config
+                    )
+                    last_error = None
+                    break
+                except Exception as e:
+                    last_error = e
+                    if "RESOURCE_EXHAUSTED" not in str(e):
+                        raise
+            if last_error:
+                raise last_error
 
             # Kiểm tra xem Gemini có trả về Tool Call không
             if response.function_calls:

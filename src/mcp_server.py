@@ -31,6 +31,24 @@ class MCPAcademicServer:
         [TASK 2.1] HỌC VIÊN HOÀN THIỆN HÀM THỰC THI TOOL TRÊN MCP SERVER
         Thực thi request gọi Tool theo chuẩn MCP JSON-RPC
         """
+        raw_result = dispatch_tool_call(tool_name.strip().lower(), arguments)
+
+        try:
+            content = json.loads(raw_result)
+        except json.JSONDecodeError:
+            content = {"status": "PARSE_ERROR", "raw": raw_result}
+
+        return {
+            "jsonrpc": "2.0",
+            "server": self.server_name,
+            "tool": tool_name,
+            "result": content
+        }
+ 
+        """
+        [TASK 2.1] HỌC VIÊN HOÀN THIỆN HÀM THỰC THI TOOL TRÊN MCP SERVER
+        Thực thi request gọi Tool theo chuẩn MCP JSON-RPC
+        """
         # --------------------------------------------------------------------------
         # TODO 2.1: HỌC VIÊN HOÀN THIỆN HÀM GỌI TOOL CHUẨN MCP JSON-RPC
         # 🎯 YÊU CẦU THỰC THI THUẬT TOÁN:
